@@ -1,0 +1,32 @@
+name: Python Tests
+on:
+  pull_request:
+    types:
+     - synchronize
+    paths:
+      - src/*
+      - tests/*
+  push:
+    branches:
+      - master
+
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Install Python, pipenv and Pipfile packages
+        uses: palewire/install-python-pipenv-pipfile@v3
+        with:
+          python-version: 3.11
+
+      - name: Run pytest
+        uses: pavelzw/pytest-action@v2.1.0
+        with:
+          custom-pytest: pipenv run pytest
+        env:
+          IPGET_HEALTHCHECK_SERVER: ${{secrets.PYTEST_IPGET_HEALTHCHECK_SERVER}}
+          IPGET_HEALTHCHECK_UUID: ${{secrets.PYTEST_IPGET_HEALTHCHECK_UUID}}
+          IPGET_DISCORD_WEBHOOK: ${{secrets.PYTEST_IPGET_DISCORD_WEBHOOK}}

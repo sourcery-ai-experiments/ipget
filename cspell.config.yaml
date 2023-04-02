@@ -1,0 +1,41 @@
+version: "0.2"
+language: en-GB,en-US
+ignorePaths:
+  - package-lock.json
+  - node_modules
+  - vscode-extension
+  - .git/objects
+  - .vscode
+  - .vscode-insiders
+  - .vscode\extensions\*
+  - .gitignore
+  - .dockerignore
+  - Dockerfile
+  - Pipfile*
+  - Pipfile.lock
+dictionaryDefinitions: []
+dictionaries: []
+words:
+  - absolufy
+  - Buildx
+  - cytopia
+  - dariocurr
+  - delenv
+  - dotenv
+  - EnriqueSoria
+  - Entepotenz
+  - ggshield
+  - IPGET
+  - isort
+  - mypy
+  - pavelzw
+  - pipenv
+  - pymysql
+  - pytest
+  - regen
+  - setenv
+  - sourcery
+  - syphar
+  - virtualenv
+ignoreWords: []
+import: []

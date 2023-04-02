@@ -1,0 +1,61 @@
+name-template: 'v$RESOLVED_VERSION'
+tag-template: 'v$RESOLVED_VERSION'
+categories:
+  - title: 'Features'
+    labels:
+      - 'feature'
+      - 'enhancement'
+  - title: 'Bug Fixes'
+    labels:
+      - 'fix'
+      - 'bugfix'
+      - 'bug'
+  - title: 'Documentation'
+    labels:
+      - 'documentation'
+  - title: '🛠 Maintenance'
+    labels:
+      - 'maintenance'
+change-template: '- $TITLE (#$NUMBER) by @$AUTHOR'  # @$AUTHOR not used here, names in Contributors section
+change-title-escapes: '\<*_&' # You can add # and @ to disable mentions, and add ` to disable code blocks.
+version-resolver:
+  major:
+    labels:
+      - 'major'
+  minor:
+    labels:
+      - 'minor'
+      - 'enhancement'
+  patch:
+    labels:
+      - 'patch'
+      - 'dependencies'
+      - 'bug'
+  default: patch
+autolabeler:
+  - label: 'maintenance'
+    files:
+      - 'Pipfile*'
+      - '.github/*'
+      - '.vscode/*'
+    branch:
+      - '/maintenance-.+/'
+  - label: 'documentation'
+    files:
+      - '*.md'
+      - 'docs/*'
+    branch:
+      - '/docs.+/'
+  - label: 'bug'
+    branch:
+      - '/fix-.+/'
+    title:
+      - '/fix.+/'
+  - label: 'enhancement'
+    branch:
+      - '/feature-.+/'
+      - '/feat-.+/'
+template: |
+  ## Changes
+
+  $CHANGES

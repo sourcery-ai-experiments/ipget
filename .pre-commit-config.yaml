@@ -1,0 +1,52 @@
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+# pipenv install pre-commit --dev
+# pre-commit autoupdate
+# pre-commit install
+default_language_version:
+    python: python3.11
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0 # Use the sha / tag you want to point at
+    hooks:
+      - id: check-added-large-files
+      - id: check-merge-conflict
+      - id: debug-statements
+      - id: detect-private-key
+      - id: end-of-file-fixer
+      - id: fix-byte-order-marker
+      # - id: no-commit-to-branch
+      #   args: ["--branch", "main", "--branch", "master", "--branch", "release"]
+      - id: trailing-whitespace
+      - id: check-toml
+      - id: check-yaml
+
+  - repo: https://github.com/MarcoGorelli/absolufy-imports
+    rev: v0.3.1
+    hooks:
+      - id: absolufy-imports
+
+  - repo: https://github.com/charliermarsh/ruff-pre-commit
+    rev: v0.0.260
+    hooks:
+      - id: ruff
+
+  - repo: https://github.com/psf/black
+    rev: 23.3.0
+    hooks:
+      - id: black
+
+  - repo: https://github.com/pycqa/isort
+    rev: 5.12.0
+    hooks:
+      - id: isort
+        name: isort (python)
+        args: ["--profile", "black"]
+
+  - repo: https://github.com/gitguardian/ggshield
+    rev: v1.14.5
+    hooks:
+      - id: ggshield
+        language_version: python3
+        stages: [commit]

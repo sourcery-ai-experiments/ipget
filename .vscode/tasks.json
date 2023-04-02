@@ -1,0 +1,75 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "shell",
+			"label": "Generate-requirements.txt",
+			"group": "build",
+			"command": "pipenv",
+			"args": [
+				"run",
+				"pipenv",
+				"requirements",
+				">",
+				"requirements.txt",
+			]
+		},
+		{
+			"type": "shell",
+			"label": "Generate-dev-requirements.txt",
+			"group": "build",
+			"command": "pipenv",
+			"args": [
+				"run",
+				"pipenv",
+				"requirements",
+				"--dev",
+				">",
+				"dev-requirements.txt",
+			]
+		},
+		{
+			"label": "docker_build-code",
+			"type": "docker-build",
+			"platform": "python",
+			"dockerBuild": {
+				"dockerfile": "${workspaceFolder}/Dockerfile",
+				"context": "${workspaceFolder}",
+				"tag": "lunapurplesunshine/ipget:code",
+			},
+			"group": "build"
+		},
+		{
+			"label": "Run current :code",
+			"type": "docker-run",
+			"dockerRun": {
+				"image": "lunapurplesunshine/ipget:code",
+				"containerName": "ipget-code",
+				"remove": true,
+				"envFiles": [
+					"${workspaceFolder}/test-container/test.env",
+				],
+				"volumes": [
+					{
+						"localPath": "${workspaceFolder}/test-container/",
+						"containerPath": "/app",
+						"permissions": "rw"
+					}
+				]
+			},
+			"group": "test"
+		},
+		{
+			"label": "Build & Run Current :code",
+			"dependsOrder": "sequence",
+			"dependsOn": [
+				"docker_build-code",
+				"Run current :code"
+			],
+			"group": {
+				"kind": "test",
+				"isDefault": true
+			},
+		},
+	]
+}
