@@ -110,7 +110,6 @@ class MySQL(AlchemyDB):
         host = f"{self._host}:{self._port}"
         database = self._database
         url = f"{dialect}://{user_pass}@{host}/{database}"
-        log.debug(f"SQLAlchemy url: '{url}'")
         return db.create_engine(url)
 
 
