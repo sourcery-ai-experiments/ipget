@@ -1,5 +1,6 @@
 import urllib.request as req
 from datetime import datetime, timezone
+from ipaddress import IPv4Address
 from random import randint
 
 import pytest
@@ -43,12 +44,23 @@ def sqlite_in_memory(monkeypatch: MonkeyPatch):
 
 
 @pytest.fixture
-def ip_data_static() -> tuple[datetime, str]:
-    return (datetime(1963, 11, 23, 17, 16), "10.10.10.0")
+def ip_data_static() -> tuple[datetime, IPv4Address]:
+    return (datetime(1963, 11, 23, 17, 16), IPv4Address("10.10.10.0"))
+
+
+def generate_random_ipv4_address() -> IPv4Address:
+    """Returns a completely random ipaddress.IPv4Address
+
+    In this function, random.randint() is used to generate a random integer
+    within the valid range of IPv4 addresses (from 0 to 2^32 - 1),
+    the integer is converted to an IPv4Address object using ipaddress.IPv4Address()
+    """
+    ip_int = randint(0, 2**32 - 1)
+    return IPv4Address(ip_int)
 
 
 @pytest.fixture
-def ip_data_random() -> tuple[datetime, str]:
+def ip_data_random() -> tuple[datetime, IPv4Address]:
     dt = datetime.now(timezone.utc).replace(microsecond=0)
-    ip = ".".join(str(randint(0, 255)) for _ in range(4))
+    ip = generate_random_ipv4_address()
     return dt, ip
