@@ -3,7 +3,8 @@
 	"tasks": [
 		{
 			"type": "shell",
-			"label": "Generate-requirements.txt",
+			"label": "Generate requirements.txt-production",
+			"detail": "Generates requirements.txt with production/deployment requirements ONLY.",
 			"group": "build",
 			"command": "pipenv",
 			"args": [
@@ -16,7 +17,8 @@
 		},
 		{
 			"type": "shell",
-			"label": "Generate-dev-requirements.txt",
+			"label": "Generate requirements.txt-development",
+			"detail": "Generates development-requirements.txt",
 			"group": "build",
 			"command": "pipenv",
 			"args": [
@@ -30,9 +32,11 @@
 		},
 		{
 			"label": "docker-build :code",
+			"detail": "Builds multi-arch docker container as lunapurplesunshine/ipget:code. Does NOT push.",
 			"type": "docker-build",
 			"platform": "python",
 			"dockerBuild": {
+				"platform": "linux/amd64,linux/arm64,linux/arm/v6,linux/arm/v7",
 				"dockerfile": "${workspaceFolder}/Dockerfile",
 				"context": "${workspaceFolder}",
 				"tag": "lunapurplesunshine/ipget:code",
@@ -41,6 +45,7 @@
 		},
 		{
 			"label": "docker-run :code",
+			"detail": "Runs the docker container lunapurplesunshine/ipget:code for local testing in the workspace folder.",
 			"type": "docker-run",
 			"dockerRun": {
 				"image": "lunapurplesunshine/ipget:code",
@@ -60,7 +65,8 @@
 			"group": "test"
 		},
 		{
-			"label": "test-docker.io:code",
+			"label": "docker-build and run :code",
+			"detail": "Calls the docker build and run tasks.",
 			"dependsOrder": "sequence",
 			"dependsOn": [
 				"docker-build :code",
@@ -70,7 +76,8 @@
 		},
 		{
 			"type": "shell",
-			"label": "format-ruff",
+			"label": "python-lint-ruff",
+			"detail": "Lint python coder with ruff.",
 			"group": "test",
 			"command": "pipenv",
 			"args": [
@@ -83,7 +90,8 @@
 		},
 		{
 			"type": "shell",
-			"label": "format-black",
+			"label": "python-format-black",
+			"detail": "Format python code with black.",
 			"group": "test",
 			"command": "pipenv",
 			"args": [
@@ -94,7 +102,8 @@
 		},
 		{
 			"type": "shell",
-			"label": "format-isort",
+			"label": "python-format-isort",
+			"detail": "Sort python imports with isort.",
 			"group": "test",
 			"command": "pipenv",
 			"args": [
@@ -107,7 +116,8 @@
 		},
 		{
 			"type": "shell",
-			"label": "pytest-basic",
+			"label": "python-pytest-basic",
+			"detail": "Run pytest python tests.",
 			"group": "test",
 			"command": "pipenv",
 			"args": [
@@ -118,7 +128,8 @@
 		},
 		{
 			"type": "shell",
-			"label": "pytest-coverage",
+			"label": "python-pytest-coverage",
+			"detail": "Run pytest python tests with coverage report.",
 			"group": "test",
 			"command": "pipenv",
 			"args": [
@@ -130,22 +141,24 @@
 		},
 		{
 			"type": "shell",
-			"label": "test-python",
+			"label": "python-lint-and-test",
+			"detail": "Lint, format and test python code.",
 			"dependsOrder": "sequence",
 			"dependsOn": [
-				"format-black",
-				"format-isort",
-				"format-ruff",
-				"pytest-coverage",
+				"python-format-black",
+				"python-format-isort",
+				"python-lint-ruff",
+				"python-pytest-coverage",
 			]
 		},
 		{
 			"type": "shell",
 			"label": "Full Test Suite",
+			"detail": "Lint and test python, then build and test docker container.",
 			"dependsOrder": "sequence",
 			"dependsOn": [
-				"test-python",
-				"test-docker.io:code",
+				"python-lint-and-test",
+				"docker-test :code",
 			],
 			"group": {
 				"kind": "test",
@@ -155,6 +168,7 @@
 		{
 			"type": "shell",
 			"label": "precommit-uninstall",
+			"detail": "Uninstall pre-commit hooks.",
 			"group": "none",
 			"command": "pipenv",
 			"args": [
@@ -166,6 +180,7 @@
 		{
 			"type": "shell",
 			"label": "precommit-install",
+			"detail": "Install pre-commit hooks.",
 			"group": "none",
 			"command": "pipenv",
 			"args": [
@@ -177,6 +192,7 @@
 		{
 			"type": "shell",
 			"label": "precommit-autoupdate",
+			"detail": "Auto-update pre-commit hooks.",
 			"group": "none",
 			"command": "pipenv",
 			"args": [
@@ -188,6 +204,7 @@
 		{
 			"type": "shell",
 			"label": "precommit update & install",
+			"detail": "Update and reinstall all pre-commmit hooks.",
 			"group": "none",
 			"dependsOrder": "sequence",
 			"dependsOn": [
@@ -199,6 +216,7 @@
 		{
 			"type": "shell",
 			"label": "pipenv update dependencies",
+			"detail": "Update all pipenv python dependencies.",
 			"group": "none",
 			"command": "pipenv",
 			"args": [
