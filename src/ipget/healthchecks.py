@@ -2,12 +2,13 @@ import logging
 import socket
 import urllib.request as req
 from http.client import HTTPResponse
-from os import environ
 from urllib.error import HTTPError
 from urllib.parse import urlencode, urljoin
 from uuid import UUID, uuid4
 
+from ipget.environment import HEALTHCHECK_SERVER_ENV, HEALTHCHECK_UUID_ENV  # noqa: F401
 from ipget.errors import ConfigurationError
+from ipget.settings import HealthcheckSettings
 
 log = logging.getLogger(__name__)
 
@@ -15,23 +16,27 @@ log = logging.getLogger(__name__)
 class HealthCheck:
     """Class for interacting with the healthcheck.io service."""
 
-    def __init__(self) -> None:
+    def __init__(self, settings: HealthcheckSettings | None = None) -> None:
         """Initialize the HealthCheck object.
 
         Raises:
             ConfigurationError: If the IPGET_HEALTHCHECK_UUID
             environment variable is not set.
         """
+        if not settings:
+            settings = HealthcheckSettings()
+
         log.debug("Creating HealthCheck object using UUID")
         self._run_id: UUID = self.regen_uuid()
-        self._server: str = environ.get(
-            "IPGET_HEALTHCHECK_SERVER", "https://hc-ping.com"
-        )
+        self._server: str = settings.server
+        if not settings.uuid:
+            raise ConfigurationError(HEALTHCHECK_UUID_ENV)
+        self._check_uuid = settings.uuid
 
-        if uuid := environ.get("IPGET_HEALTHCHECK_UUID"):
-            self._check_uuid = uuid
-        else:
-            raise ConfigurationError("IPGET_HEALTHCHECK_UUID")
+        if missing_settings := [
+            k for k, v in settings.model_dump(by_alias=True).items() if not v
+        ]:
+            raise ConfigurationError(missing_env_var=", ".join(missing_settings))
 
         self._url: str = ""
 
@@ -209,7 +214,7 @@ class HealthCheck:
         return self._request(ping_type=returncode, timeout=timeout, post_data=payload)
 
 
-def get_healthcheck() -> HealthCheck | None:
+def get_healthcheck(settings: HealthcheckSettings | None = None) -> HealthCheck | None:
     """Get an instance of the HealthCheck object.
 
     Returns:
@@ -220,7 +225,7 @@ def get_healthcheck() -> HealthCheck | None:
         ConfigurationError: If the HealthCheck object cannot be created.
     """
     try:
-        return HealthCheck()
+        return HealthCheck(settings)
     except ConfigurationError as e:
         log.exception(f"{e}, Healthchecks integration disabled")
         return None

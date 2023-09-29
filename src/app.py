@@ -3,20 +3,20 @@ import urllib.request
 from datetime import datetime, timezone
 from ipaddress import IPv4Address, IPv6Address, ip_address
 from logging.handlers import TimedRotatingFileHandler
-from os import environ
-from pathlib import Path
 from sys import exit
 
 from ipget.alchemy import get_database
 from ipget.healthchecks import get_healthcheck
 from ipget.notifications import get_discord
+from ipget.settings import AppSettings, LoggerSettings
 
 log = logging.getLogger("ipget")
 
 
-def setup_logging():
+def setup_logging() -> None:
     """Setup file and console logging."""
-    log_dir = Path(environ.get("IPGET_LOG_FILE_PATH", "/app/logs"))
+    log_settings = LoggerSettings()
+    log_dir = log_settings.file_path
     log_dir.mkdir(parents=True, exist_ok=True)
     file_handler = TimedRotatingFileHandler(
         log_dir / "ipget.log",
@@ -32,8 +32,8 @@ def setup_logging():
             "%(asctime)s %(name)-19s[%(lineno)3d]%(levelname)7s: %(message)s"
         )
     )
-    level = environ.get("IPGET_LOG_LEVEL", "INFO")
-    log.setLevel(level.upper() if isinstance(level, str) else level)
+    log_level = log_settings.level
+    log.setLevel(log_level.upper() if isinstance(log_level, str) else log_level)
     console_handler = logging.StreamHandler()
     log.addHandler(console_handler)
     console_handler.setFormatter(
@@ -50,7 +50,9 @@ def get_current_ip() -> IPv4Address | IPv6Address:
 
 def main() -> int:
     setup_logging()
-    db = get_database()
+    config = AppSettings()
+
+    db = get_database(mode=config.db_type)
 
     if not db.created_new_table:
         last = db.get_last()

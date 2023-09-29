@@ -3,7 +3,6 @@ from abc import ABC
 from datetime import datetime
 from ipaddress import IPv4Address, IPv6Address
 from ipaddress import ip_address as IPAddress
-from os import environ
 from pathlib import Path
 
 import sqlalchemy as db
@@ -11,6 +10,7 @@ from sqlalchemy import URL, String
 from sqlalchemy.orm import Mapped, Session, declarative_base, mapped_column
 
 from ipget.errors import ConfigurationError
+from ipget.settings import GenericDatabaseSettings, SQLiteDatabaseSettings
 
 log = logging.getLogger(__name__)
 
@@ -42,27 +42,23 @@ class AlchemyDB(ABC):
         self.engine: db.Engine = self.create_engine()
         self.create_table()
 
-    def _load_config_from_environment(self):
-        """Load MySQL/PostgreSQL configuration values from environment variables.
+    def _load_settings(self, settings: GenericDatabaseSettings):
+        """Load MySQL/PostgreSQL configuration values from environment variables,
+        using `pydantic-settings` .
 
         Raises:
             ConfigurationError: If any required setting is missing.
         """
-        self.username: str | None = environ.get("IPGET_USERNAME")
-        self.password: str | None = environ.get("IPGET_PASSWORD")
-        self.host: str | None = environ.get("IPGET_HOST")
-        self.port: int | None = (
-            int(port) if (port := environ.get("IPGET_PORT")) else None
-        )
-        self.database: str | None = environ.get("IPGET_DATABASE")
-        required_settings = [
-            (self.username, "IPGET_USERNAME"),
-            (self.password, "IPGET_PASSWORD"),
-            (self.host, "IPGET_HOST"),
-            (self.port, "IPGET_PORT"),
-            (self.database, "IPGET_DATABASE"),
-        ]
-        if missing_settings := [e for k, e in required_settings if not k]:
+
+        self.username: str | None = settings.username
+        self.password: str | None = settings.password
+        self.host: str | None = settings.host
+        self.port: int | None = settings.port
+        self.database: str | None = settings.database_name
+
+        if missing_settings := [
+            k for k, v in settings.model_dump(by_alias=True).items() if not v
+        ]:
             raise ConfigurationError(missing_env_var=", ".join(missing_settings))
 
     def create_engine(self) -> db.Engine:
@@ -156,17 +152,17 @@ class SQLite(AlchemyDB):
     this means it is necessary to override inherited methods.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, settings: SQLiteDatabaseSettings | None = None) -> None:
         """Initialize SQLite using valuse from config."""
         self.dialect: str = "sqlite"
-        self._load_config_from_environment()
+        if not settings:
+            settings = SQLiteDatabaseSettings()
+        self._load_settings(settings)
         super().__init__()
 
-    def _load_config_from_environment(self):
+    def _load_settings(self, settings: SQLiteDatabaseSettings):
         """Load SQLite file path from environment variable."""
-        self.database_path: Path = Path(
-            environ.get("IPGET_DATABASE", "/app/public_ip.db")
-        )
+        self.database_path: Path = settings.database_file_path
 
     def create_engine(self) -> db.Engine:
         """Create and return the SQLAlchemy engine for SQLite.
@@ -188,44 +184,48 @@ class SQLite(AlchemyDB):
 class MySQL(AlchemyDB):
     """Concrete class for interacting with a MySQL database."""
 
-    def __init__(self) -> None:
+    def __init__(self, settings: GenericDatabaseSettings | None = None) -> None:
         """Initialize MySQL using valuse from config."""
         self.dialect: str = "mysql+pymysql"
-        self._load_config_from_environment()
+        if not settings:
+            settings = GenericDatabaseSettings()
+        self._load_settings(settings)
         super().__init__()
 
 
 class PostgreSQL(AlchemyDB):
     """Concrete class for interacting with a PostgreSQL database."""
 
-    def __init__(self) -> None:
+    def __init__(self, settings: GenericDatabaseSettings | None = None) -> None:
         """Initialize PostgreSQL using valuse from config."""
         self.dialect = "postgresql+pg8000"
-        self._load_config_from_environment()
+        if not settings:
+            settings = GenericDatabaseSettings()
+        self._load_settings(settings)
         super().__init__()
 
 
-def get_database(type: str = environ.get("IPGET_DB_TYPE", "")) -> AlchemyDB:
-    """Get the database instance based on the provided type.
+def get_database(mode: str) -> AlchemyDB:
+    """Get the database instance based on the provided mode.
 
     Args:
-        type (str): The type of database.
-        Defaults to the value of IPGET_DB_TYPE environment variable.
+        mode (str): The mode of database.
+        Defaults to `sqlite`.
 
     Returns:
         AlchemyDB: An instance of the AlchemyDB or its derived classes.
 
     Raises:
-        ConfigurationError: If the provided database type is not supported
+        ConfigurationError: If the provided database mode is not supported
         or if any required configuration setting is missing.
     """
-    log.debug(f"Requested database type is '{type.lower()}'")
+    log.debug(f"Requested database mode is '{mode.lower()}'")
     try:
-        match type.lower():
-            case "mysql":
-                return MySQL()
+        match mode.lower():
             case "sqlite":
                 return SQLite()
+            case "mysql" | "mariadb":
+                return MySQL()
             case "postgres" | "postgresql":
                 return PostgreSQL()
             case _:
