@@ -2,7 +2,7 @@ import logging
 from pathlib import Path
 from typing import Literal
 
-from pydantic import Field, validator
+from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from ipget.environment import (
@@ -51,7 +51,8 @@ class LoggerSettings(ConfiguredBaseSettings):
         validation_alias=LOG_FILE_PATH,
     )
 
-    @validator("level", pre=True)
+    @field_validator("level", mode="before")
+    @classmethod
     def convert_to_upper(cls, v):
         return v.upper() if isinstance(v, str) else v
 
@@ -146,6 +147,7 @@ class AppSettings(ConfiguredBaseSettings):
         validation_alias=DATABASE_TYPE_ENV,
     )
 
-    @validator("db_type", pre=True)
+    @field_validator("db_type", mode="before")
+    @classmethod
     def convert_to_lower(cls, v):
         return v.lower() if isinstance(v, str) else v
