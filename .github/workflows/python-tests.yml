@@ -19,6 +19,7 @@ jobs:
         uses: actions/checkout@v4
 
       - uses: actions/setup-python@v4
+        id: setup-python
         with:
           python-version: "3.11"
 
@@ -48,6 +49,6 @@ jobs:
         with:
           custom-pytest: poetry run pytest
         env:
-          IPGET_HEALTHCHECK_SERVER: ${{secrets.PYTEST_IPGET_HEALTHCHECK_SERVER}}
-          IPGET_HEALTHCHECK_UUID: ${{secrets.PYTEST_IPGET_HEALTHCHECK_UUID}}
-          IPGET_DISCORD_WEBHOOK: ${{secrets.PYTEST_IPGET_DISCORD_WEBHOOK}}
+          IPGET_TEST_HEALTHCHECK_SERVER: ${{secrets.PYTEST_IPGET_HEALTHCHECK_SERVER}}
+          IPGET_TEST_HEALTHCHECK_UUID: ${{secrets.PYTEST_IPGET_HEALTHCHECK_UUID}}
+          IPGET_TEST_DISCORD_WEBHOOK: ${{secrets.PYTEST_IPGET_DISCORD_WEBHOOK}}
