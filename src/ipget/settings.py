@@ -1,10 +1,8 @@
 import logging
-import platform
 from pathlib import Path
-from typing import Annotated, Literal
+from typing import Literal
 
-from pydantic import Field
-from pydantic.types import StringConstraints
+from pydantic import Field, validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from ipget.environment import (
@@ -27,8 +25,6 @@ log = logging.getLogger(__name__)
 LOG_LEVELS = Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
 DATABASE_TYPES = Literal["sqlite", "mysql", "mariadb", "postgres", "postgresql"]
 
-###########################################################
-
 
 class ConfiguredBaseSettings(BaseSettings):
     """Common configuration used by all `BaseSettings` derived classes."""
@@ -36,17 +32,15 @@ class ConfiguredBaseSettings(BaseSettings):
     model_config = SettingsConfigDict(
         env_prefix="IPGET_",
         populate_by_name=True,
-        secrets_dir="/run/secrets" if platform.system() == "Linux" else None,
+        # Disabled due to issues when building container, implement later.
+        # secrets_dir="/run/secrets" if platform.system() == "Linux" else None,
     )
 
 
 class LoggerSettings(ConfiguredBaseSettings):
     """Settings used by python logging."""
 
-    level: Annotated[
-        LOG_LEVELS,
-        StringConstraints.to_upper,
-    ] = Field(
+    level: LOG_LEVELS = Field(
         default="INFO",
         serialization_alias=LOG_LEVEL_ENV,
         validation_alias=LOG_LEVEL_ENV,
@@ -56,6 +50,10 @@ class LoggerSettings(ConfiguredBaseSettings):
         serialization_alias=LOG_FILE_PATH,
         validation_alias=LOG_FILE_PATH,
     )
+
+    @validator("level", pre=True)
+    def convert_to_upper(cls, v):
+        return v.upper() if isinstance(v, str) else v
 
 
 class HealthcheckSettings(ConfiguredBaseSettings):
@@ -142,8 +140,12 @@ class AppSettings(ConfiguredBaseSettings):
         db_type (str): Type of the database.
     """
 
-    db_type: str = Field(
+    db_type: DATABASE_TYPES = Field(
         default="sqlite",
         serialization_alias=DATABASE_TYPE_ENV,
         validation_alias=DATABASE_TYPE_ENV,
     )
+
+    @validator("db_type", pre=True)
+    def convert_to_lower(cls, v):
+        return v.lower() if isinstance(v, str) else v
