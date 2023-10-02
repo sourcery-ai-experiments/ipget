@@ -8,6 +8,9 @@ testpaths = ["tests/"]
 xfail_strict = true
 markers = ["no_test_env"]
 
+[tool.coverage.run]
+source = ["src/ipget"]
+
 [tool.poetry]
 name = "ipget"
 version = "0.8.1"
@@ -23,6 +26,7 @@ pymysql = "*"
 discord-webhook = "*"
 requests = "*"
 pg8000 = "*"
+pydantic-settings = "^2.0.3"
 
 [tool.poetry.group.dev.dependencies]
 rope = "*"
@@ -34,6 +38,8 @@ pytest-cov = "*"
 pre-commit = "*"
 pytest-md = "*"
 pytest-emoji = "*"
+python-dotenv = "^1.0.0"
+hypothesis = "^6.87.1"
 
 [build-system]
 requires = ["poetry-core"]

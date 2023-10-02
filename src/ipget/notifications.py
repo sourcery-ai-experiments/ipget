@@ -1,13 +1,14 @@
 import logging
 from http.client import responses
 from ipaddress import IPv4Address, IPv6Address
-from os import environ
 from typing import Literal
 
 from discord_webhook import DiscordWebhook
 from requests import Response
 
+from ipget.environment import DISCORD_WEBHOOK_ENV
 from ipget.errors import ConfigurationError
+from ipget.settings import NotificationSettings
 
 log = logging.getLogger(__name__)
 
@@ -15,17 +16,20 @@ log = logging.getLogger(__name__)
 class Discord:
     """Class for sending notifications to Discord."""
 
-    def __init__(self) -> None:
+    def __init__(self, settings: NotificationSettings | None = None) -> None:
         """Initialize the Discord notification object.
 
         Raises:
             ConfigurationError: If the IPGET_DISCORD_WEBHOOK
             environment variable is not set.
         """
-        if webhook_url := environ.get("IPGET_DISCORD_WEBHOOK"):
-            self.webhook_url = webhook_url
+        if not settings:
+            settings = NotificationSettings()
+
+        if settings.discord_webhook:
+            self.webhook_url = settings.discord_webhook
         else:
-            raise ConfigurationError("IPGET_DISCORD_WEBHOOK")
+            raise ConfigurationError(DISCORD_WEBHOOK_ENV)
 
     def _send_basic_message(self, message: str) -> Response:
         """Send a basic (non-embed) message to the Discord webhook.

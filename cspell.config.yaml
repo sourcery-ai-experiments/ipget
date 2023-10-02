@@ -32,6 +32,7 @@ words:
   - pavelzw
   - pipenv
   - psycopg
+  - pydantic
   - pymysql
   - pytest
   - regen
