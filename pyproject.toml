@@ -27,7 +27,6 @@ discord-webhook = "*"
 requests = "*"
 pg8000 = "*"
 pydantic-settings = "^2.0.3"
-python-dotenv = "^1.0.0"
 
 [tool.poetry.group.dev.dependencies]
 rope = "*"
@@ -39,6 +38,8 @@ pytest-cov = "*"
 pre-commit = "*"
 pytest-md = "*"
 pytest-emoji = "*"
+python-dotenv = "^1.0.0"
+hypothesis = "^6.87.1"
 
 [build-system]
 requires = ["poetry-core"]
