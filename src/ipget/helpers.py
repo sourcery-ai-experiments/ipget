@@ -1,5 +1,5 @@
+import datetime
 import logging
-from datetime import datetime
 from pathlib import Path
 
 log = logging.getLogger(__name__)
@@ -20,9 +20,11 @@ def custom_namer(name: str) -> str:
     """
     if not isinstance(name, str):
         raise TypeError(name)
-    name_path = Path(name)
-    stem = name_path.stem
-    if not all([name, stem, name_path.suffix]):
+    name_path = Path(name).resolve()
+    stem = str(name_path.stem).replace(".log", "")
+    if not all([stem, name_path.suffix]):
         raise ValueError(name)
-    date = str(datetime.now().date())
-    return f"{stem}.{date}{name_path.suffix}"
+    log_dir = name_path.parent
+    date = str(datetime.datetime.now().date())
+    # return str(log_dir.joinpath(f"ipget.{date}.log"))
+    return str(log_dir.joinpath(f"{stem}.{date}.log"))
