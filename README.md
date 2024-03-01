@@ -3,7 +3,6 @@
 ![GitHub](https://img.shields.io/github/license/LunaPurpleSunshine/ipget?label=licence)
 [![GitHub Release (Latest SemVer)](https://img.shields.io/github/v/release/LunaPurpleSunshine/ipget?sort=semver)](https://github.com/LunaPurpleSunshine/ipget-docker/releases)
 ![Poetry Python Version](https://img.shields.io/badge/dynamic/toml?url=https%3A%2F%2Fraw.githubusercontent.com%2FLunaPurpleSunshine%2Fipget%2Fmaster%2Fpyproject.toml&query=%24.tool.poetry.dependencies.python&logoColor=12a8ff&label=python)
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Python Tests](https://github.com/LunaPurpleSunshine/ipget/actions/workflows/python-tests.yml/badge.svg)](https://github.com/LunaPurpleSunshine/ipget/actions/workflows/python-tests.yml)
 [![CodeQL](https://github.com/LunaPurpleSunshine/ipget/actions/workflows/codeql.yml/badge.svg)](https://github.com/LunaPurpleSunshine/ipget/actions/workflows/codeql.yml)
 
@@ -33,7 +32,7 @@ Docker-compose files containing [SQLite](docs/sqlite-example-compose.yaml) and [
 
 ### Database Configuration
 
-| Environment Variable | Required             | Description                                                                   |
+| Environment Variable | Required By            | Description                                                                   |
 | -------------------- | -------------------- | ----------------------------------------------------------------------------- |
 | `IPGET_DB_TYPE`      | Allways              | Which database type to use. Must be one of `SQLite`, `MySQL` or `PostgreSQL`. |
 | `IPGET_DATABASE`     | `MySQL` `PostgreSQL` | Name of the database to connect to e.g. `public_ip_db`.                       |
@@ -44,11 +43,12 @@ Docker-compose files containing [SQLite](docs/sqlite-example-compose.yaml) and [
 
 #### Using SQLite
 
+> [!NOTE]
+> It is generally **not** necessary to modify environment variable configuration for SQLite, these values are intended for use in development e.g. setting the path to `:memory:`, for testing.
+
 For `SQLite`, `IPGET_DATABASE` is the path to the sqlite database file **within the container**, which defaults to `/app/public_ip.db`.
 When deploying the container, the path should be configured via docker volume mappings to a persistent location, if it is not, then the database file **will be lost** on container restart!
 See the [here](docs/sqlite-example-compose.yaml) for an example docker compose file.
-
-It is generally **not** necessary to modify environment variable configuration for SQLite, these values are intended for use in development e.g. setting the path to `:memory:`, for testing.
 
 ### Logging & Monitoring
 
@@ -56,8 +56,8 @@ It is generally **not** necessary to modify environment variable configuration f
 | -------------------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `IPGET_LOG_LEVEL`    | `INFO`  | Log level. Passed directly to the python logging module's [`Logger.setlevel`](https://docs.python.org/3.7/library/logging.html#logging.Logger.setLevel). |
 
->⚠️ **Note**:
-Healthcheck urls (see [Healthchecks](#healthchecks)), including un-redacted uuids, etc. will be included in `DEBUG` level logging output.
+>[!WARNING]
+> Healthcheck urls (see [Healthchecks](#healthchecks)), including un-redacted uuids, etc. will be included in `DEBUG` level logging output.
 
 #### Healthchecks
 
@@ -80,7 +80,7 @@ If a discord webhook is given, then notifications will be sent every time the de
 
 | Environment Variable | Default                                         | Description                                                                                              |
 | -------------------- | ----------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
-| `IPGET_URL_LIST`     | `["https://ident.me", "https://api.ipify.org"]` | JSON-encoded string of URL(s) to use for IP address detection, the first url to return a result is used. |
+| `IPGET_URL_LIST`     | `["https://ident.me", "https://api.ipify.org"]` | JSON-encoded string of URL(s) to use for IP address detection. The first url to return a result is used. |
 
 > [!IMPORTANT]
 > The `IPGET_URL_LIST` environment variable **must** be a JSON-encoded string, representing a list of URLs, e.g. `["https://ident.me", "https://api.ipify.org", "http://ifconfig.me/ip"]`.
