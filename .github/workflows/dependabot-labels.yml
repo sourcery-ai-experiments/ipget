@@ -37,14 +37,30 @@ jobs:
         run: gh pr edit "${{env.PR_URL}}" --add-label "${{env.LABEL_SEMVER_DEFAULT}}"
 
       # Python Dependencies
+      - name: Determine if development or production
+        id: determine-python-label
+        if: steps.metadata.outputs.package-ecosystem == 'pip'
+        # Check if the github ref containd 'development', or
+        # Ruff, mypy, pytest, which are development dependencies,
+        # but they are not in the development-dependencies group
+        run: |
+          if [[ ${{ github.head_ref }} == *dependabot/pip/development-dependencies* ]]; then
+            echo "py-dep-type=development" >> "$GITHUB_OUTPUT"
+          elif [[ ${{ github.head_ref }} =~ ^.*\/(ruff|mypy|pytest)-.*$ ]]; then
+            echo "py-dep-type=development" >> "$GITHUB_OUTPUT"
+            echo "py-dep-type=development" >> "$GITHUB_OUTPUT"
+          else
+            echo "py-dep-type=production" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Python Production
         id: label-python-production
-        if: steps.metadata.outputs.package-ecosystem == 'pip' && startsWith(github.head_ref, 'dependabot/pip/development-dependencies') == false
+        if: steps.metadata.outputs.package-ecosystem == 'pip' && steps.determine-python-label.outputs.py-dep-type == 'production'
         run: gh pr edit "${{env.PR_URL}}" --add-label "${{env.LABEL_PRODUCTION}}"
 
       - name: Python Development
         id: label-python-development
-        if: steps.metadata.outputs.package-ecosystem == 'pip' && startsWith(github.head_ref, 'dependabot/pip/development-dependencies')
+        if: steps.metadata.outputs.package-ecosystem == 'pip' && steps.determine-python-label.outputs.py-dep-type == 'development'
         run: gh pr edit "${{env.PR_URL}}" --add-label "${{env.LABEL_DEVELOPMENT}}"
 
       # GitHub Actions Dependencies
