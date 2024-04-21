@@ -41,7 +41,7 @@ jobs:
       - name: Determine if development or production
         id: determine-python-label
         if: steps.metadata.outputs.package-ecosystem == 'pip'
-        # Check if the github ref containd 'devlopment', or
+        # Check if the github ref containd 'development', or
         # Ruff, mypy, pytest, which are development dependencies,
         # but they are not in the development-dependencies group
         run: |
