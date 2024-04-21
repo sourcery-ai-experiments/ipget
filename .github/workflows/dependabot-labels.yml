@@ -47,7 +47,8 @@ jobs:
         run: |
           if [[ ${{ github.head_ref }} == *dependabot/pip/development-dependencies* ]]; then
             echo "py-dep-type=development" >> "$GITHUB_OUTPUT"
-          elif [[ ${{ github.head_ref }} == *ruff* ]] || [[ ${{ github.head_ref }} == *mypy* ]] || [[ ${{ github.head_ref }} == *pytest* ]]; then
+          elif [[ ${{ github.head_ref }} =~ ^.*\/(ruff|mypy|pytest)-.*$ ]]; then
+            echo "py-dep-type=development" >> "$GITHUB_OUTPUT"
             echo "py-dep-type=development" >> "$GITHUB_OUTPUT"
           else
             echo "py-dep-type=production" >> "$GITHUB_OUTPUT"
