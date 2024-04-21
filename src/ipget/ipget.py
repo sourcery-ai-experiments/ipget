@@ -25,7 +25,7 @@ def get_ip_from_url(url: str) -> IPv4Address | IPv6Address | None:
     """
     log.debug(f"Retrieving current IP from {url}")
     try:
-        ip_str = urllib.request.urlopen("https://ident.me").read().decode("utf8")
+        ip_str = urllib.request.urlopen(url).read().decode("utf8")
         return ip_address(ip_str)
     except urllib.error.URLError:
         log.warning(
