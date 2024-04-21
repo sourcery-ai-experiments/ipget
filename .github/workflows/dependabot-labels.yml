@@ -37,7 +37,6 @@ jobs:
         run: gh pr edit "${{env.PR_URL}}" --add-label "${{env.LABEL_SEMVER_DEFAULT}}"
 
       # Python Dependencies
-
       - name: Determine if development or production
         id: determine-python-label
         if: steps.metadata.outputs.package-ecosystem == 'pip'
